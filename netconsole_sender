@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+"""
+netconsole client / server
+
+--client:
+    Sends input from stdin to the robot cRIO.
+
+    Messages are broadcast over port 6668 by default
+"""
+
+import sys
+import socket
+import asyncore
+import atexit
+import argparse
+import re
+import readline
+
+DEFAULT_CLIENT_PORT = 6668
+DEFAULT_TEAM = 4413
+
+RE_EXIT = re.compile('^(quit|exit)$')
+
+def team_number_to_ip(team):
+    """team number (xxyy) -> 10.xx.yy.2"""
+    xx = team / 100
+    yy = team % 100
+    return "10.%0d.%0d.2" % (xx, yy)
+
+def make_client_socket(port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind(('', port))
+    return sock
+
+def start_client(port, team):
+    #addr = team_number_to_ip(team)
+    addr = '192.168.0.255'
+
+    client = make_client_socket(port)
+
+    atexit.register(client.close)
+
+    # provide readline functionality if we're processing off a command line
+    if sys.stdin.isatty():
+        while True:
+            try:
+                line = input('--> ') + '\n'
+            except KeyboardInterrupt:
+                break
+            if process_input(client, port, addr, line):
+                break
+    else: # if we're not using a command line, process off of stdin
+        for line in sys.stdin: # read from stdin
+            if process_input(client, port, addr, line):
+                break
+
+def process_input(client, port, addr, line):
+    if RE_EXIT.match(line):
+        return True
+    client.sendto(line.encode(), (addr, port))
+
+if __name__ == '__main__':
+    parse = argparse.ArgumentParser(description='FRC netconsole sender')
+    parse.add_argument('--team', action='store', dest='team',
+                       default=DEFAULT_TEAM, type=int, help='Team number')
+    parse.add_argument('--port', action='store', dest='port',
+                       default=DEFAULT_CLIENT_PORT, type=int,
+                       help='The port to send commands over')
+
+    args = parse.parse_args()
+
+    start_client(args.port, args.team)

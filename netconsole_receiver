@@ -1,0 +1,4 @@
+#!/bin/bash
+# FRC Netconsole listener
+
+socat udp-recv:6666 stdout
