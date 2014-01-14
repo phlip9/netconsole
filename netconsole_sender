@@ -21,24 +21,24 @@ DEFAULT_TEAM = 4413
 
 RE_EXIT = re.compile('^(quit|exit)$')
 
-def team_number_to_robot_ip(team):
+def team_number_to_robot_subnet(team):
     """team number (xxyy) -> 10.xx.yy.2"""
     xx = team / 100
     yy = team % 100
-    return "10.%0d.%0d.2" % (xx, yy)
+    return "10.%0d.%0d.255" % (xx, yy)
 
-def make_client_socket(port, addr):
+def make_client_socket(port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    #sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind((addr, port))
+    sock.bind(('', port))
     return sock
 
 def start_client(port, team):
-    addr = team_number_to_robot_ip(team)
+    addr = team_number_to_robot_subnet(team)
     #addr = '192.168.0.255' # debugging
 
-    client = make_client_socket(port, addr)
+    client = make_client_socket(port)
 
     atexit.register(client.close)
 
@@ -59,7 +59,7 @@ def start_client(port, team):
 def process_input(client, port, addr, line):
     if RE_EXIT.match(line):
         return True
-    client.send(line.encode(), (addr, port))
+    client.sendto(line.encode(), (addr, port))
 
 if __name__ == '__main__':
     parse = argparse.ArgumentParser(description='FRC netconsole sender')
