@@ -1,4 +1,17 @@
 #!/bin/bash
 # FRC Netconsole listener
 
-socat udp-recv:6666 stdout
+# usage
+
+PORT=6666
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]
+then
+    echo "Usage: $0 [-p <port>]"
+    exit
+elif [ "$1" == "-p" ]
+then
+    PORT=$2
+fi
+
+socat udp-recv:$PORT stdout
