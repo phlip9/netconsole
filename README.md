@@ -54,4 +54,10 @@ The `netconsole_sender` also supports piping commands over stdin
     $ echo "help" | netconsole_sender
     $ netconsole_sender < some_script.sh
 
+### VxWorks WindShell Documentation ###
+
+[WindShell man page](http://www.vxdev.com/docs/vx55man/tornado/tools/windsh.html)
+
+[VxWorks Tutorial](http://www-cdfonline.fnal.gov/daq/computing/vxworks/tutorial.html)
+
 [vxWorks Command Cheat sheet](http://touro.ligo-la.caltech.edu/~cparames/CDS/vxWorks_commands.html)
