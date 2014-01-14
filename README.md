@@ -18,7 +18,7 @@ Installation
 
 Clone this repository
 
-    $ git clone ssh://github.com/phlip9/netconsole
+    $ git clone git@github.com:phlip9/netconsole.git
 
 Install `socat`
 
